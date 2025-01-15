@@ -265,7 +265,8 @@ namespace Ikeiwa
                 messages = new List<VersionError>();
                 messages.Add(new VersionError
                 {
-                    message = "All packages are installed correctly"
+                    message = "All packages are installed correctly",
+                    messageType = MessageType.Info
                 });
             }
             else
