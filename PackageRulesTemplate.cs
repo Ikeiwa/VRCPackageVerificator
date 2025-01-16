@@ -479,7 +479,6 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         private string creatorName;
         private string packageName;
 
-        [MenuItem("Tools/test")]
         public static void Show()
         {
             PackageVersionVerificatorSetup window = CreateInstance<PackageVersionVerificatorSetup>();
