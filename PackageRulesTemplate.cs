@@ -531,11 +531,13 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 
                 File.WriteAllText(scriptPath, scriptContent);
                 
-                Rename(new FileInfo(scriptPath), "PackageRules"+packageName);
+                Rename(new FileInfo(scriptPath), "PackageRules"+packageName+".cs");
                 
                 var metaPath = scriptPath+".meta";
                 if(File.Exists(metaPath))
                     File.Delete(metaPath);
+                
+                Close();
             }
         }
         
