@@ -522,7 +522,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 
                 string scriptContent = File.ReadAllText(scriptPath);
 
-                scriptContent = scriptContent.Replace("PackageVerificatorNamespaceTemplate", "PackageVerificator" + creatorName + "." + packageName);
+                scriptContent = scriptContent.Replace("namespace Ikeiwa.PackageVerificatorNamespaceTemplate", "namespace Ikeiwa.PackageVerificator" + creatorName + "." + packageName);
                 scriptContent = scriptContent.Replace("PackageNameTemplate", packageName);
                 scriptContent = scriptContent.Replace("CreatorNameTemplate", creatorName);
                 scriptContent = scriptContent.Replace("PackageRulesTemplate", "PackageRules"+packageName);
