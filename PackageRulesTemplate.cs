@@ -425,7 +425,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         private Vector2 scroll;
         private List<Object> rules;
 
-        [MenuItem("Tools/CreatorNameTemplate/PackageNameTemplate/Check Packages")]
+        //DISABLEDMENU[MenuItem("Tools/CreatorNameTemplate/PackageNameTemplate/Check Packages")]
         public static void Show()
         {
             var packageRules = AssetDatabase.FindAssets($"t: {nameof(PackageRulesTemplate)}").ToList()
@@ -479,19 +479,13 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         private string creatorName;
         private string packageName;
 
-        [MenuItem("Tools/Package Verificator Setup")]
+        /*ENABLEDMENU*/[MenuItem("Tools/Package Verificator Setup")]
         public static void Show()
         {
             PackageVersionVerificatorSetup window = GetWindow<PackageVersionVerificatorSetup>(true, "Package Verificator Setup", true);
             window.titleContent = new GUIContent("Package Verificator Setup");
             window.minSize = new Vector2(350,200);
             window.maxSize = window.minSize;
-        }
-        
-        [MenuItem("Tools/Package Verificator Setup",true)]
-        private static bool CheckSetup()
-        {
-            return typeof(PackageVerificator).Namespace == "Ikeiwa.PackageVerificatorNamespaceTemplate";
         }
 
         void OnGUI()
@@ -532,6 +526,8 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 scriptContent = scriptContent.Replace("PackageNameTemplate", packageName);
                 scriptContent = scriptContent.Replace("CreatorNameTemplate", creatorName);
                 scriptContent = scriptContent.Replace("PackageRulesTemplate", "PackageRules"+packageName);
+                scriptContent = scriptContent.Replace("//DISABLEDMENU", "");
+                scriptContent = scriptContent.Replace("/*ENABLEDMENU*/", "//");
                 
                 File.WriteAllText(scriptPath, scriptContent);
                 
