@@ -2,12 +2,11 @@
  * You may use, distribute and modify this code under the
  * terms of the MIT license.
  */
-using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using System.Linq;
-using UnityEngine.Serialization;
-using Object = UnityEngine.Object;
+using System.Text.RegularExpressions;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -15,9 +14,9 @@ using UnityEditor.PackageManager;
 using UnityEditor.PackageManager.Requests;
 #endif
 
-namespace Ikeiwa
+namespace Ikeiwa.PackageVerificatorNamespaceTemplate
 {
-    [Serializable]
+    [System.Serializable]
     public class VersionError
     {
         [Tooltip("The error message")]
@@ -30,7 +29,7 @@ namespace Ikeiwa
         public MessageType messageType = MessageType.Error;
     }
     
-    [Serializable]
+    [System.Serializable]
     public class PackageRequirement
     {
         [Tooltip("The id of the package (ex: com.vrchat.base)")]
@@ -45,11 +44,11 @@ namespace Ikeiwa
         public string[] classesEquivalent = null;
     }
     
-    [CreateAssetMenu(fileName = "PackageRules.asset", menuName = "Ikeiwa/Package Verificator/Package Rules")]
-    public class PackageRules : ScriptableObject
+    [CreateAssetMenu(fileName = "PackageRulesTemplate.asset", menuName = "CreatorNameTemplate/Package Verificator/Package Rules")]
+    public class PackageRulesTemplate : ScriptableObject
     {
         [Tooltip("The name of your asset package")]
-        public string packageName = "Package";
+        public string packageName = "PackageNameTemplate";
         [Tooltip("The thumbnail of your asset package (optional)")]
         public Texture2D packageThumbnail;
         [Tooltip("The version of your asset package (to force show the popup to project with old version installed)")]
@@ -97,7 +96,13 @@ namespace Ikeiwa
         static PackageVerificator()
         {
             Request = Client.List(true);
-            EditorApplication.update += Progress;
+
+            if (typeof(PackageVerificator).Namespace == "Ikeiwa.PackageVerificatorNamespaceTemplate")
+            {
+                PackageVersionVerificatorSetup.Show();
+            }
+            else
+                EditorApplication.update += Progress;
         }
 
         static void Progress()
@@ -122,17 +127,17 @@ namespace Ikeiwa
 
         private static void CheckPackageRules(bool ignoreDoNotShow = false)
         {
-            var packageRules = AssetDatabase.FindAssets($"t: {nameof(PackageRules)}").ToList()
+            var packageRules = AssetDatabase.FindAssets($"t: {typeof(PackageRulesTemplate).FullName}").ToList()
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadMainAssetAtPath).ToList();
 
             foreach (var packageRule in packageRules)
             {
-                CheckInstall(packageRule as PackageRules, ignoreDoNotShow);
+                CheckInstall(packageRule as PackageRulesTemplate, ignoreDoNotShow);
             }
         }
 
-        public static void CheckInstall(PackageRules rules, bool ignoreDoNotShow = false)
+        public static void CheckInstall(PackageRulesTemplate rules, bool ignoreDoNotShow = false)
         {
             if (!rules)
                 return;
@@ -231,12 +236,12 @@ namespace Ikeiwa
 
     public class PackageVersionVerificatorWindow : EditorWindow
     {
-        private PackageRules rules;
+        private PackageRulesTemplate _rules;
         private List<VersionError> errors;
         private Vector2 scroll;
         private bool isValidPopup;
 
-        public static void DisplayError(PackageRules rules, List<VersionError> errors)
+        public static void DisplayError(PackageRulesTemplate rules, List<VersionError> errors)
         {
             if (errors == null || errors.Count == 0)
                 return;
@@ -246,14 +251,14 @@ namespace Ikeiwa
                 window.titleContent = new GUIContent(rules.packageName + " Install Verificator");
             else
                 window.titleContent = new GUIContent(rules.popupTitle);
-            window.rules = rules;
+            window._rules = rules;
             window.errors = errors;
             window.minSize = new Vector2(500,window.GetPopupHeight(errors.Count));
             window.maxSize = window.minSize;
             window.ShowUtility();
         }
 
-        public static void DisplayValidPopup(PackageRules rules)
+        public static void DisplayValidPopup(PackageRulesTemplate rules)
         {
             if (!rules)
                 return;
@@ -280,7 +285,7 @@ namespace Ikeiwa
             else
                 window.titleContent = new GUIContent(rules.popupTitle);
             window.isValidPopup = true;
-            window.rules = rules;
+            window._rules = rules;
             window.errors = messages;
             window.minSize = new Vector2(500,window.GetPopupHeight(messages.Count));
             window.maxSize = window.minSize;
@@ -304,21 +309,21 @@ namespace Ikeiwa
                 DrawIssueBox(error);
             }
 
-            if (rules.assetToPing && isValidPopup)
+            if (_rules.assetToPing && isValidPopup)
             {
-                if(GUILayout.Button(rules.pingAssetButtonText))
+                if(GUILayout.Button(_rules.pingAssetButtonText))
                 {
-                    Selection.activeObject = rules.assetToPing;
+                    Selection.activeObject = _rules.assetToPing;
                     EditorGUIUtility.PingObject(Selection.activeObject);
                 }
             }
             
             EditorGUILayout.Space();
 
-            if(GUILayout.Button(rules.doNotShowButtonText))
+            if(GUILayout.Button(_rules.doNotShowButtonText))
             {
                 EditorGUILayout.EndScrollView();
-                EditorPrefs.SetBool(PlayerSettings.productName + "-" + PackageVerificator.ignorePrefName + "-" + rules.packageName + "-" + rules.packageVersion, true);
+                EditorPrefs.SetBool(PlayerSettings.productName + "-" + PackageVerificator.ignorePrefName + "-" + _rules.packageName + "-" + _rules.packageVersion, true);
                 Close();
                 return;
             }
@@ -335,14 +340,14 @@ namespace Ikeiwa
 
         void DrawHeader()
         {
-            if (!rules.packageThumbnail)
+            if (!_rules.packageThumbnail)
                 return;
             
-            float imageRatio = (float)rules.packageThumbnail.height / (float)rules.packageThumbnail.width;
+            float imageRatio = (float)_rules.packageThumbnail.height / (float)_rules.packageThumbnail.width;
             int imgHeight = (int)(500 * imageRatio);
             
-            GUI.DrawTexture(position, rules.packageThumbnail, ScaleMode.ScaleToFit);
-            GUI.DrawTexture(new Rect(0,0,500, imgHeight), rules.packageThumbnail, ScaleMode.ScaleToFit, true);
+            GUI.DrawTexture(position, _rules.packageThumbnail, ScaleMode.ScaleToFit);
+            GUI.DrawTexture(new Rect(0,0,500, imgHeight), _rules.packageThumbnail, ScaleMode.ScaleToFit, true);
             EditorGUILayout.Space(imgHeight);
         }
 
@@ -386,12 +391,12 @@ namespace Ikeiwa
         private int GetPopupHeight(int messageCount)
         {
             int height = 40 * messageCount + 50;
-            if (isValidPopup && rules.assetToPing)
+            if (isValidPopup && _rules.assetToPing)
                 height += 30;
 
-            if (rules.packageThumbnail)
+            if (_rules.packageThumbnail)
             {
-                float imageRatio = (float)rules.packageThumbnail.height / (float)rules.packageThumbnail.width;
+                float imageRatio = (float)_rules.packageThumbnail.height / (float)_rules.packageThumbnail.width;
                 
                 height += (int)(500 * imageRatio);
             }
@@ -420,12 +425,18 @@ namespace Ikeiwa
         private Vector2 scroll;
         private List<Object> rules;
 
-        [MenuItem("Tools/Package Verificator/Check Packages")]
+        [MenuItem("Tools/CreatorNameTemplate/PackageNameTemplate/Check Packages")]
         public static void Show()
         {
-            var packageRules = AssetDatabase.FindAssets($"t: {nameof(PackageRules)}").ToList()
+            var packageRules = AssetDatabase.FindAssets($"t: {nameof(PackageRulesTemplate)}").ToList()
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadMainAssetAtPath).ToList();
+
+            if (packageRules.Count == 1)
+            {
+                PackageVerificator.CheckInstall((PackageRulesTemplate)packageRules[0]);
+                return;
+            }
             
             PackageVersionVerificatorListWindow window = CreateInstance<PackageVersionVerificatorListWindow>();
             window.titleContent = new GUIContent("Select a package");
@@ -447,7 +458,7 @@ namespace Ikeiwa
             {
                 foreach (var ruleObj in rules)
                 {
-                    PackageRules rule = (PackageRules)ruleObj;
+                    PackageRulesTemplate rule = (PackageRulesTemplate)ruleObj;
                     
                     if(!rule)
                         continue;
@@ -460,6 +471,81 @@ namespace Ikeiwa
             }
             
             EditorGUILayout.EndScrollView();
+        }
+    }
+    
+    public class PackageVersionVerificatorSetup : EditorWindow
+    {
+        private string creatorName;
+        private string packageName;
+
+        [MenuItem("Tools/test")]
+        public static void Show()
+        {
+            PackageVersionVerificatorSetup window = CreateInstance<PackageVersionVerificatorSetup>();
+            window.titleContent = new GUIContent("Package Verificator Setup");
+            window.minSize = new Vector2(350,200);
+            window.maxSize = window.minSize;
+            window.ShowUtility();
+        }
+
+        void OnGUI()
+        {
+            EditorGUILayout.LabelField("Please enter some information about your product :");
+            creatorName = EditorGUILayout.TextField("Creator Name", creatorName);
+            if (!string.IsNullOrEmpty(creatorName))
+            {
+                creatorName = new Regex("[^a-zA-Z0-9 -]").Replace(creatorName, "");
+                creatorName = new Regex(@"\s+").Replace(creatorName, "");
+                creatorName = creatorName.Substring(0,Mathf.Min(creatorName.Length,16));
+            }
+            
+            packageName = EditorGUILayout.TextField("Product Name", packageName);
+            if (!string.IsNullOrEmpty(packageName))
+            {
+                packageName = new Regex("[^a-zA-Z0-9 -]").Replace(packageName, "");
+                packageName = new Regex(@"\s+").Replace(packageName, "");
+                packageName = packageName.Substring(0,Mathf.Min(packageName.Length,16));
+            }
+            
+            GUI.enabled = !string.IsNullOrEmpty(creatorName) && !string.IsNullOrEmpty(packageName);
+
+            if (GUILayout.Button("Setup Package Verificator"))
+            {
+                var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(CreateInstance<PackageRulesTemplate>()));
+                scriptPath = Path.Combine(Application.dataPath, scriptPath.Substring("Assets/".Length));
+
+                if (!File.Exists(scriptPath))
+                {
+                    Debug.LogError("Package Verificator Setup Error, could not find script at path : " + scriptPath);
+                    return;
+                }
+                
+                string scriptContent = File.ReadAllText(scriptPath);
+
+                scriptContent = scriptContent.Replace("PackageVerificatorNamespaceTemplate", "PackageVerificator" + creatorName + "." + packageName);
+                scriptContent = scriptContent.Replace("PackageNameTemplate", packageName);
+                scriptContent = scriptContent.Replace("CreatorNameTemplate", creatorName);
+                scriptContent = scriptContent.Replace("PackageRulesTemplate", "PackageRules"+packageName);
+                
+                File.WriteAllText(scriptPath, scriptContent);
+                
+                Rename(new FileInfo(scriptPath), "PackageRules"+packageName);
+                
+                var metaPath = scriptPath+".meta";
+                if(File.Exists(metaPath))
+                    File.Delete(metaPath);
+            }
+        }
+        
+        private void Rename(FileInfo fileInfo, string newName)
+        {
+            string newPath = fileInfo.Directory.FullName + "\\" + newName;
+            
+            if(File.Exists(newPath))
+                File.Delete(newPath);
+            
+            fileInfo.MoveTo(newPath);
         }
     }
 #endif
