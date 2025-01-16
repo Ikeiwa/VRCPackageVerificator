@@ -531,17 +531,20 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 
                 File.WriteAllText(scriptPath, scriptContent);
                 
-                Rename(new FileInfo(scriptPath), "PackageRules"+packageName+".cs");
+                string newScriptPath = Rename(new FileInfo(scriptPath), "PackageRules"+packageName+".cs");
                 
                 var metaPath = scriptPath+".meta";
                 if(File.Exists(metaPath))
                     File.Delete(metaPath);
                 
+                AssetDatabase.ImportAsset(GetRelativePath(newScriptPath));
+                AssetDatabase.Refresh();
+                
                 Close();
             }
         }
         
-        private void Rename(FileInfo fileInfo, string newName)
+        private string Rename(FileInfo fileInfo, string newName)
         {
             string newPath = fileInfo.Directory.FullName + "\\" + newName;
             
@@ -549,6 +552,20 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 File.Delete(newPath);
             
             fileInfo.MoveTo(newPath);
+
+            return newPath;
+        }
+
+        private string GetRelativePath(string path)
+        {
+            path = path.Replace('\\', '/');
+            path = path.Replace(@"\\", "/");
+            
+            if (path.StartsWith(Application.dataPath)) {
+                return "Assets" + path.Substring(Application.dataPath.Length);
+            }
+            
+            return path;
         }
     }
 #endif
