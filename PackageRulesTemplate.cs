@@ -479,13 +479,19 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         private string creatorName;
         private string packageName;
 
+        [MenuItem("Tools/Package Verificator Setup")]
         public static void Show()
         {
-            PackageVersionVerificatorSetup window = CreateInstance<PackageVersionVerificatorSetup>();
+            PackageVersionVerificatorSetup window = GetWindow<PackageVersionVerificatorSetup>(true, "Package Verificator Setup", true);
             window.titleContent = new GUIContent("Package Verificator Setup");
             window.minSize = new Vector2(350,200);
             window.maxSize = window.minSize;
-            window.ShowUtility();
+        }
+        
+        [MenuItem("Tools/Package Verificator Setup",true)]
+        private static bool CheckSetup()
+        {
+            return typeof(PackageVerificator).Namespace == "Ikeiwa.PackageVerificatorNamespaceTemplate";
         }
 
         void OnGUI()
