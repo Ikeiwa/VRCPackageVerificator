@@ -16,6 +16,8 @@ using UnityEditor.PackageManager.Requests;
 
 namespace Ikeiwa.PackageVerificatorNamespaceTemplate
 {
+#if UNITY_EDITOR
+    
     [System.Serializable]
     public class VersionError
     {
@@ -44,7 +46,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         public string[] classesEquivalent = null;
     }
     
-    [CreateAssetMenu(fileName = "PackageRulesTemplate.asset", menuName = "CreatorNameTemplate/Package Verificator/Package Rules")]
+    //DISABLEDMENU[CreateAssetMenu(fileName = "PackageRulesTemplate.asset", menuName = "CreatorNameTemplate/Package Verificator/Package Rules")]
     public class PackageRulesTemplate : ScriptableObject
     {
         [Tooltip("The name of your asset package")]
@@ -85,7 +87,6 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         }
     }
     
-    #if UNITY_EDITOR
     [InitializeOnLoad]
     public static class PackageVerificator
     {
@@ -425,7 +426,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         private Vector2 scroll;
         private List<Object> rules;
 
-        //DISABLEDMENU[MenuItem("Tools/CreatorNameTemplate/PackageNameTemplate/Check Packages")]
+        //DISABLEDMENU[MenuItem("MenuPathTemplate")]
         public static void Show()
         {
             var packageRules = AssetDatabase.FindAssets($"t: {nameof(PackageRulesTemplate)}").ToList()
@@ -478,6 +479,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
     {
         private string creatorName;
         private string packageName;
+        private string menuPath;
 
         /*ENABLEDMENU*/[MenuItem("Tools/Package Verificator Setup")]
         public static void Show()
@@ -507,6 +509,11 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 packageName = packageName.Substring(0,Mathf.Min(packageName.Length,16));
             }
             
+            menuPath = EditorGUILayout.TextField("Custom Menu Path", menuPath);
+            
+            if(string.IsNullOrEmpty(menuPath) && !string.IsNullOrEmpty(creatorName) && !string.IsNullOrEmpty(packageName))
+                EditorGUILayout.LabelField("Tools/"+creatorName+"/"+packageName+"/Check Packages");
+            
             GUI.enabled = !string.IsNullOrEmpty(creatorName) && !string.IsNullOrEmpty(packageName);
 
             if (GUILayout.Button("Setup Package Verificator"))
@@ -526,6 +533,9 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
                 scriptContent = scriptContent.Replace("PackageNameTemplate", packageName);
                 scriptContent = scriptContent.Replace("CreatorNameTemplate", creatorName);
                 scriptContent = scriptContent.Replace("PackageRulesTemplate", "PackageRules"+packageName);
+                if (string.IsNullOrEmpty(menuPath))
+                    menuPath = "Tools/"+creatorName+"/"+packageName+"/Check Packages";
+                scriptContent = scriptContent.Replace("MenuPathTemplate", menuPath);
                 scriptContent = scriptContent.Replace("//DISABLEDMENU", "");
                 scriptContent = scriptContent.Replace("/*ENABLEDMENU*/", "//");
                 
