@@ -46,7 +46,7 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
         public string[] classesEquivalent = null;
     }
     
-    //DISABLEDMENU[CreateAssetMenu(fileName = "PackageRulesTemplate.asset", menuName = "CreatorNameTemplate/Package Verificator/Package Rules")]
+    //DISABLEDMENU[CreateAssetMenu(fileName = "PackageRulesTemplate.asset", menuName = "Package Verificator/CreatorNameTemplate/PackageNameTemplate/Package Rules")]
     public class PackageRulesTemplate : ScriptableObject
     {
         [Tooltip("The name of your asset package")]
