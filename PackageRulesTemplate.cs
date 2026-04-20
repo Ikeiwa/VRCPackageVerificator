@@ -201,21 +201,28 @@ namespace Ikeiwa.PackageVerificatorNamespaceTemplate
             if(required == "Any" || string.IsNullOrEmpty(required))
                 return true;
 
-            System.Version installedVersion = null;
-            System.Version requiredVersion = null;
-
-            try
-            {
-                installedVersion = new System.Version(installed);
-                requiredVersion = new System.Version(required);
-            }
-            catch(System.Exception ex)
-            {
+            if (!TryParseComparableVersion(installed, out var installedVersion))
                 return false;
-            }
-            
+
+            if (!TryParseComparableVersion(required, out var requiredVersion))
+                return false;
 
             return installedVersion >= requiredVersion;
+        }
+
+        private static bool TryParseComparableVersion(string version, out System.Version parsedVersion)
+        {
+            parsedVersion = null;
+
+            if (string.IsNullOrWhiteSpace(version))
+                return false;
+
+            // Keep only the numeric core version (e.g. "3.10.3-beta.2" -> "3.10.3").
+            Match match = Regex.Match(version.Trim(), @"^\d+(?:\.\d+){0,3}");
+            if (!match.Success)
+                return false;
+
+            return System.Version.TryParse(match.Value, out parsedVersion);
         }
 
         private static string SimplifyVersion(string version)
